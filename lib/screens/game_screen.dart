@@ -20,31 +20,46 @@ class _GameScreenState extends State<GameScreen> {
 
   void _onSwipe(String direction) {
     setState(() {
-      // TODO: implémenter game.move(direction);
-      // game.move(direction);
+      game.move(direction);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("2048 Flutter")),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text("Score: ${game.score}", style: const TextStyle(fontSize: 20)),
-          const SizedBox(height: 20),
-          BoardWidget(board: game.board),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                game = Game();
-              });
-            },
-            child: const Text("Nouvelle Partie"),
-          ),
-        ],
+    return GestureDetector(
+      onVerticalDragEnd: (details) {
+        if (details.primaryVelocity! < 0) {
+          _onSwipe("up");
+        } else {
+          _onSwipe("down");
+        }
+      },
+      onHorizontalDragEnd: (details) {
+        if (details.primaryVelocity! < 0) {
+          _onSwipe("left");
+        } else {
+          _onSwipe("right");
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text("2048 Flutter")),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("Score: ${game.score}", style: const TextStyle(fontSize: 20)),
+            const SizedBox(height: 20),
+            BoardWidget(board: game.board),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  game = Game();
+                });
+              },
+              child: const Text("Nouvelle Partie"),
+            ),
+          ],
+        ),
       ),
     );
   }

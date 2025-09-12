@@ -7,15 +7,25 @@ class TileWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.center,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeInOut,
       decoration: BoxDecoration(
         color: _getTileColor(value),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
-        value == 0 ? '' : '$value',
-        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      alignment: Alignment.center,
+      child: AnimatedScale(
+        scale: value == 0 ? 0 : 1,
+        duration: const Duration(milliseconds: 200),
+        child: Text(
+          value == 0 ? '' : '$value',
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }
@@ -34,6 +44,16 @@ class TileWidget extends StatelessWidget {
         return Colors.red;
       case 64:
         return Colors.redAccent;
+      case 128:
+        return Colors.yellow[700]!;
+      case 256:
+        return Colors.yellow[800]!;
+      case 512:
+        return Colors.green;
+      case 1024:
+        return Colors.teal;
+      case 2048:
+        return Colors.purple;
       default:
         return Colors.black54;
     }
