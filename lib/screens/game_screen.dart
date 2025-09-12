@@ -21,7 +21,29 @@ class _GameScreenState extends State<GameScreen> {
   void _onSwipe(String direction) {
     setState(() {
       game.move(direction);
+      if (game.isGameOver) {
+        _showGameOverDialog();
+      }
     });
+  }
+
+  void _showGameOverDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Game Over"),
+        content: Text("Score final : ${game.score}"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() => game = Game());
+            },
+            child: const Text("Rejouer"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -48,7 +70,11 @@ class _GameScreenState extends State<GameScreen> {
           children: [
             Text("Score: ${game.score}", style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 20),
-            BoardWidget(board: game.board),
+            BoardWidget(
+              board: game.board,
+              mergedTiles: game.mergedTiles,
+              newTiles: game.newTiles,
+            ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {

@@ -1,25 +1,58 @@
 import 'package:flutter/material.dart';
 
-class TileWidget extends StatelessWidget {
+class TileWidget extends StatefulWidget {
   final int value;
+  final bool merged;
+  final bool isNew;
 
-  const TileWidget({super.key, required this.value});
+  const TileWidget({
+    super.key,
+    required this.value,
+    this.merged = false,
+    this.isNew = false,
+  });
+
+  @override
+  State<TileWidget> createState() => _TileWidgetState();
+}
+
+class _TileWidgetState extends State<TileWidget>
+    with SingleTickerProviderStateMixin {
+  double scale = 1.0;
+
+  @override
+  void didUpdateWidget(TileWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.merged) {
+      // pulse fusion
+      setState(() => scale = 1.2);
+      Future.delayed(const Duration(milliseconds: 120), () {
+        if (mounted) setState(() => scale = 1.0);
+      });
+    } else if (widget.isNew) {
+      // apparition
+      setState(() => scale = 0.0);
+      Future.delayed(Duration.zero, () {
+        if (mounted) setState(() => scale = 1.0);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
+    return AnimatedScale(
+      scale: scale,
       duration: const Duration(milliseconds: 150),
       curve: Curves.easeInOut,
-      decoration: BoxDecoration(
-        color: _getTileColor(value),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      alignment: Alignment.center,
-      child: AnimatedScale(
-        scale: value == 0 ? 0 : 1,
-        duration: const Duration(milliseconds: 200),
+      child: Container(
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: _getTileColor(widget.value),
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Text(
-          value == 0 ? '' : '$value',
+          '${widget.value}',
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
