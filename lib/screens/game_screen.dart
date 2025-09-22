@@ -65,26 +65,30 @@ class _GameScreenState extends State<GameScreen> {
       },
       child: Scaffold(
         appBar: AppBar(title: const Text("2048 Flutter")),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text("Score: ${game.score}", style: const TextStyle(fontSize: 20)),
-            const SizedBox(height: 20),
-            BoardWidget(
-              board: game.board,
-              mergedTiles: game.mergedTiles,
-              newTiles: game.newTiles,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  game = Game();
-                });
-              },
-              child: const Text("Nouvelle Partie"),
-            ),
-          ],
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text("Score: ${game.score}",
+                  style: const TextStyle(fontSize: 20)),
+              const SizedBox(height: 20),
+              BoardWidget(
+                board: game.board,
+                mergedTiles: game.mergedTiles,
+                newTiles: game.newTiles,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    game = Game();
+                  });
+                },
+                child: const Text("Nouvelle Partie"),
+              ),
+            ],
+          ),
         ),
       ),
     );
