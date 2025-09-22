@@ -21,6 +21,17 @@ class _TileWidgetState extends State<TileWidget>
   double scale = 1.0;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.isNew) {
+      scale = 0.0;
+      Future.delayed(Duration.zero, () {
+        if (mounted) setState(() => scale = 1.0);
+      });
+    }
+  }
+
+  @override
   void didUpdateWidget(TileWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 

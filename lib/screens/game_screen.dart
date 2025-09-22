@@ -18,13 +18,21 @@ class _GameScreenState extends State<GameScreen> {
     game = Game();
   }
 
-  void _onSwipe(String direction) {
-    setState(() {
-      game.move(direction);
-      if (game.isGameOver) {
-        _showGameOverDialog();
-      }
-    });
+  void _onSwipe(String direction) async {
+    // Step 1: Move and merge tiles, animate merges
+    bool moved = game.moveWithoutNewTile(direction);
+    if (moved) {
+      setState(() {}); // Animate merges
+
+      // Step 2: After a short delay, add new tile and animate its appearance
+      await Future.delayed(const Duration(milliseconds: 10));
+      setState(() {
+        game.addNewTileAfterMove();
+        if (game.isGameOver) {
+          _showGameOverDialog();
+        }
+      });
+    }
   }
 
   void _showGameOverDialog() {

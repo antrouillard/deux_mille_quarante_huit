@@ -5,7 +5,7 @@ class Game {
   List<List<int>> board = List.generate(size, (_) => List.filled(size, 0));
   int score = 0;
   Set<Point<int>> mergedTiles = {};
-  Set<Point<int>> newTiles = {}; // ✅ pour animer l'apparition
+  Set<Point<int>> newTiles = {};
   bool isGameOver = false;
 
   Game() {
@@ -23,13 +23,13 @@ class Game {
     if (empty.isNotEmpty) {
       final pos = empty[Random().nextInt(empty.length)];
       board[pos.x][pos.y] = Random().nextInt(10) == 0 ? 4 : 2;
-      newTiles.add(pos); // ✅ enregistrée comme nouvelle
+      newTiles.add(pos);
     }
   }
 
-  bool move(String direction) {
+  bool moveWithoutNewTile(String direction) {
     mergedTiles.clear();
-    newTiles.clear(); // on repart de zéro à chaque coup
+    newTiles.clear();
 
     List<List<int>> oldBoard = [
       for (var row in board) [...row]
@@ -68,10 +68,14 @@ class Game {
 
     bool moved = !_areBoardsEqual(oldBoard, board);
     if (moved) {
-      _addNewTile();
       _checkGameOver();
     }
     return moved;
+  }
+
+  void addNewTileAfterMove() {
+    _addNewTile();
+    _checkGameOver();
   }
 
   List<int> _merge(List<int> line,
@@ -84,7 +88,6 @@ class Game {
         score += line[i];
         line[i + 1] = 0;
 
-        // ✅ fusion enregistrée
         if (row != null) {
           int col = reverse ? (size - 1 - i) : i;
           mergedTiles.add(Point(row, col));
