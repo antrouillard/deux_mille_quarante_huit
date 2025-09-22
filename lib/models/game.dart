@@ -6,6 +6,7 @@ class Game {
   int score = 0;
   Set<Point<int>> mergedTiles = {};
   Set<Point<int>> newTiles = {};
+  Set<Point<int>> explodingTiles = {};
   bool isGameOver = false;
 
   Game() {
@@ -22,7 +23,14 @@ class Game {
     }
     if (empty.isNotEmpty) {
       final pos = empty[Random().nextInt(empty.length)];
-      board[pos.x][pos.y] = Random().nextInt(10) == 0 ? 4 : 2;
+      int rand = Random().nextInt(15);
+      if (rand == 0) {
+        board[pos.x][pos.y] = -1; // Special tile
+      } else if (rand == 1) {
+        board[pos.x][pos.y] = 4;
+      } else {
+        board[pos.x][pos.y] = 2;
+      }
       newTiles.add(pos);
     }
   }
@@ -83,6 +91,35 @@ class Game {
     line = line.where((v) => v != 0).toList();
 
     for (var i = 0; i < line.length - 1; i++) {
+      int mergedIndex = -1;
+      if (line[i] == -1 && line[i + 1] > 0) {
+        mergedIndex = i;
+      } else if (line[i + 1] == -1 && line[i] > 0) {
+        mergedIndex = i + 1;
+      }
+
+      if (mergedIndex != -1) {
+        explodingTiles.clear();
+        int boardRow =
+            row ?? (reverse ? (size - 1 - mergedIndex) : mergedIndex);
+        int boardCol =
+            colIndex ?? (reverse ? (size - 1 - mergedIndex) : mergedIndex);
+
+        line[i] = 0;
+        line[i + 1] = 0;
+
+        for (int dx = -1; dx <= 1; dx++) {
+          for (int dy = -1; dy <= 1; dy++) {
+            int x = boardRow + dx;
+            int y = boardCol + dy;
+            if (x >= 0 && x < size && y >= 0 && y < size) {
+              board[x][y] = 0;
+              explodingTiles.add(Point(x, y));
+            }
+          }
+        }
+      }
+
       if (line[i] == line[i + 1]) {
         line[i] *= 2;
         score += line[i];

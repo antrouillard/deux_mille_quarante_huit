@@ -7,12 +7,14 @@ class BoardWidget extends StatelessWidget {
   final List<List<int>> board;
   final Set<Point<int>> mergedTiles;
   final Set<Point<int>> newTiles;
+  final Set<Point<int>> explodingTiles;
 
   const BoardWidget({
     super.key,
     required this.board,
     required this.mergedTiles,
     required this.newTiles,
+    required this.explodingTiles,
   });
 
   @override
@@ -51,6 +53,7 @@ class BoardWidget extends StatelessWidget {
               final pos = Point(i, j);
               final merged = mergedTiles.contains(pos);
               final isNew = newTiles.contains(pos);
+              final isExploding = explodingTiles.contains(pos);
 
               return AnimatedPositioned(
                 key: ValueKey('tile_${i}_$j\_$value'),
@@ -60,7 +63,11 @@ class BoardWidget extends StatelessWidget {
                 child: SizedBox(
                   width: tileSize,
                   height: tileSize,
-                  child: TileWidget(value: value, merged: merged, isNew: isNew),
+                  child: TileWidget(
+                      value: value,
+                      merged: merged,
+                      isNew: isNew,
+                      isExploding: isExploding),
                 ),
               );
             });

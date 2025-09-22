@@ -4,12 +4,14 @@ class TileWidget extends StatefulWidget {
   final int value;
   final bool merged;
   final bool isNew;
+  final bool isExploding;
 
   const TileWidget({
     super.key,
     required this.value,
     this.merged = false,
     this.isNew = false,
+    this.isExploding = false,
   });
 
   @override
@@ -36,16 +38,14 @@ class _TileWidgetState extends State<TileWidget>
     super.didUpdateWidget(oldWidget);
 
     if (widget.merged) {
-      // pulse fusion
       setState(() => scale = 1.2);
       Future.delayed(const Duration(milliseconds: 120), () {
         if (mounted) setState(() => scale = 1.0);
       });
-    } else if (widget.isNew) {
-      // apparition
-      setState(() => scale = 0.0);
-      Future.delayed(Duration.zero, () {
-        if (mounted) setState(() => scale = 1.0);
+    } else if (widget.isExploding) {
+      setState(() => scale = 1.3);
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (mounted) setState(() => scale = 0.0);
       });
     }
   }
@@ -62,20 +62,31 @@ class _TileWidgetState extends State<TileWidget>
           color: _getTileColor(widget.value),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Text(
-          '${widget.value}',
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
+        child: widget.value == -1
+            ? const Text(
+                '💣',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              )
+            : Text(
+                '${widget.value}',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
       ),
     );
   }
 
   Color _getTileColor(int val) {
     switch (val) {
+      case -1:
+        return Colors.black;
       case 2:
         return Colors.grey[300]!;
       case 4:

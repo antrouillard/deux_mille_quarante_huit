@@ -33,6 +33,10 @@ class _GameScreenState extends State<GameScreen> {
         }
       });
     }
+    await Future.delayed(const Duration(milliseconds: 200));
+    setState(() {
+      game.explodingTiles.clear();
+    });
   }
 
   void _showGameOverDialog() {
@@ -85,6 +89,7 @@ class _GameScreenState extends State<GameScreen> {
                 board: game.board,
                 mergedTiles: game.mergedTiles,
                 newTiles: game.newTiles,
+                explodingTiles: game.explodingTiles,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
