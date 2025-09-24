@@ -13,6 +13,8 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   late Game game;
+  GameMode _selectedMode = GameMode.classique;
+  // TIMER
   Timer? _moveTimer;
   static const int moveTimeoutSeconds = 5;
   double _timerProgress = 1.0;
@@ -23,8 +25,10 @@ class _GameScreenState extends State<GameScreen> {
   @override
   void initState() {
     super.initState();
-    game = Game();
-    _startMoveTimer();
+    game = Game(mode: _selectedMode);
+    if (_selectedMode == GameMode.vitesse) {
+      _startMoveTimer();
+    }
   }
 
   void _startMoveTimer() {
@@ -55,8 +59,11 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _onSwipe(String direction) async {
-    _moveTimer?.cancel();
-    _timerProgress = 1.0;
+    if (_selectedMode == GameMode.vitesse) {
+      _moveTimer?.cancel();
+      _timerProgress = 1.0;
+    }
+
     bool moved = game.moveWithoutNewTile(direction);
     if (moved) {
       _moveCount++;
@@ -84,7 +91,9 @@ class _GameScreenState extends State<GameScreen> {
         game.mergedTiles.clear();
       });
     }
-    _startMoveTimer();
+    if (_selectedMode == GameMode.vitesse) {
+      _startMoveTimer();
+    }
   }
 
   void _showGameOverDialog() {
@@ -97,7 +106,13 @@ class _GameScreenState extends State<GameScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              setState(() => game = Game());
+              setState(() {
+                game = Game();
+                _moveCount = 0;
+                _currentTimeout = moveTimeoutSeconds.toDouble();
+                _moveTimer?.cancel();
+                _startMoveTimer();
+              });
             },
             child: const Text("Rejouer"),
           ),
@@ -130,28 +145,68 @@ class _GameScreenState extends State<GameScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text("2048 Flutter")),
+        appBar: AppBar(
+          title: Image.asset(
+            'static/icon/image.png',
+            height: 48, // Adjust as needed
+            fit: BoxFit.contain,
+          ),
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              DropdownButton<GameMode>(
+                value: _selectedMode,
+                onChanged: (mode) {
+                  if (mode != null) {
+                    setState(() {
+                      _selectedMode = mode;
+                      // Reset game and timer when mode changes
+                      game = Game(mode: _selectedMode);
+                      _moveCount = 0;
+                      _currentTimeout = moveTimeoutSeconds.toDouble();
+                      _moveTimer?.cancel();
+                      if (_selectedMode == GameMode.vitesse) {
+                        _startMoveTimer();
+                      }
+                    });
+                  }
+                },
+                items: const [
+                  DropdownMenuItem(
+                    value: GameMode.classique,
+                    child: Text("Classique"),
+                  ),
+                  DropdownMenuItem(
+                    value: GameMode.special,
+                    child: Text("Spécial"),
+                  ),
+                  DropdownMenuItem(
+                    value: GameMode.vitesse,
+                    child: Text("Vitesse"),
+                  ),
+                ],
+              ),
               // SCORE
               Text("Score: ${game.score}",
                   style: const TextStyle(fontSize: 20)),
               const SizedBox(height: 20),
               // MOVE TIMER
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeInOut,
-                width: 200 * (_currentTimeout / moveTimeoutSeconds),
-                child: LinearProgressIndicator(
-                  value: _timerProgress,
-                  backgroundColor: Colors.grey[300],
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
-                  minHeight: 8,
+              if (_selectedMode == GameMode.vitesse)
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeInOut,
+                  width: 200 * (_currentTimeout / moveTimeoutSeconds),
+                  child: LinearProgressIndicator(
+                    value: _timerProgress,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                    minHeight: 8,
+                  ),
                 ),
-              ),
+
               const SizedBox(height: 20),
               BoardWidget(
                 board: game.board,
@@ -167,7 +222,9 @@ class _GameScreenState extends State<GameScreen> {
                     _moveCount = 0;
                     _currentTimeout = moveTimeoutSeconds.toDouble();
                     _moveTimer?.cancel();
-                    _startMoveTimer();
+                    if (_selectedMode == GameMode.vitesse) {
+                      _startMoveTimer();
+                    }
                   });
                 },
                 child: const Text("Nouvelle Partie"),

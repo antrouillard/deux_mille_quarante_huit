@@ -1,5 +1,7 @@
 import 'dart:math';
 
+enum GameMode { classique, special, vitesse }
+
 class Game {
   static const int size = 4;
   List<List<int>> board = List.generate(size, (_) => List.filled(size, 0));
@@ -9,7 +11,9 @@ class Game {
   Set<Point<int>> explodingTiles = {};
   bool isGameOver = false;
 
-  Game() {
+  final GameMode mode;
+
+  Game({this.mode = GameMode.classique}) {
     _addNewTile();
     _addNewTile();
   }
@@ -24,7 +28,7 @@ class Game {
     if (empty.isNotEmpty) {
       final pos = empty[Random().nextInt(empty.length)];
       int rand = Random().nextInt(15);
-      if (rand == 0) {
+      if (mode == GameMode.special && rand == 0) {
         board[pos.x][pos.y] = -1; // Special tile
       } else if (rand == 1) {
         board[pos.x][pos.y] = 4;
