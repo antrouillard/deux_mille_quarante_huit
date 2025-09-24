@@ -3,6 +3,7 @@ import '../models/game.dart';
 import '../widgets/board_widget.dart';
 import 'dart:async';
 import 'dart:math';
+import 'package:dropdown_button2/dropdown_button2.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -145,54 +146,97 @@ class _GameScreenState extends State<GameScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Image.asset(
-            'static/icon/image.png',
-            height: 48, // Adjust as needed
-            fit: BoxFit.contain,
-          ),
-        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              DropdownButton<GameMode>(
-                value: _selectedMode,
-                onChanged: (mode) {
-                  if (mode != null) {
-                    setState(() {
-                      _selectedMode = mode;
-                      // Reset game and timer when mode changes
-                      game = Game(mode: _selectedMode);
-                      _moveCount = 0;
-                      _currentTimeout = moveTimeoutSeconds.toDouble();
-                      _moveTimer?.cancel();
-                      if (_selectedMode == GameMode.vitesse) {
-                        _startMoveTimer();
-                      }
-                    });
-                  }
-                },
-                items: const [
-                  DropdownMenuItem(
-                    value: GameMode.classique,
-                    child: Text("Classique"),
+              Padding(
+                padding: const EdgeInsets.only(top: 24.0, bottom: 8.0),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  child: Image.asset(
+                    'static/icon/image.png',
+                    height: 215, // Adjust as needed
+                    fit: BoxFit.contain,
                   ),
-                  DropdownMenuItem(
-                    value: GameMode.special,
-                    child: Text("Spécial"),
-                  ),
-                  DropdownMenuItem(
-                    value: GameMode.vitesse,
-                    child: Text("Vitesse"),
-                  ),
-                ],
+                ),
               ),
+              // MODE DROPDOWN
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 120.0),
+                child: DropdownButton2<GameMode>(
+                  isExpanded: true,
+                  value: _selectedMode,
+                  underline: const SizedBox.shrink(),
+                  onChanged: (mode) {
+                    if (mode != null) {
+                      setState(() {
+                        _selectedMode = mode;
+                        game = Game(mode: _selectedMode);
+                        _moveCount = 0;
+                        _currentTimeout = moveTimeoutSeconds.toDouble();
+                        _moveTimer?.cancel();
+                        if (_selectedMode == GameMode.vitesse) {
+                          _startMoveTimer();
+                        }
+                      });
+                    }
+                  },
+                  items: const [
+                    DropdownMenuItem(
+                      value: GameMode.classique,
+                      child: Center(
+                          child: Text("Classique",
+                              style: TextStyle(
+                                  color: Colors.black, fontSize: 25))),
+                    ),
+                    DropdownMenuItem(
+                      value: GameMode.special,
+                      child: Center(
+                          child: Text("Spécial",
+                              style: TextStyle(
+                                  color: Color.fromARGB(255, 252, 217, 61),
+                                  fontSize: 25))),
+                    ),
+                    DropdownMenuItem(
+                      value: GameMode.vitesse,
+                      child: Center(
+                          child: Text("Vitesse",
+                              style: TextStyle(
+                                  color: Color.fromARGB(255, 24, 167, 203),
+                                  fontSize: 25))),
+                    ),
+                  ],
+                  buttonStyleData: ButtonStyleData(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.grey[100],
+                      border:
+                          Border.all(color: Colors.blueGrey.shade200, width: 2),
+                    ),
+                  ),
+                  dropdownStyleData: DropdownStyleData(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.white,
+                    ),
+                  ),
+                  iconStyleData: const IconStyleData(
+                    icon: Icon(Icons.arrow_drop_down,
+                        color: Colors.orange, size: 28),
+                  ),
+                  menuItemStyleData: const MenuItemStyleData(
+                    height: 48,
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
               // SCORE
               Text("Score: ${game.score}",
                   style: const TextStyle(fontSize: 20)),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               // MOVE TIMER
               if (_selectedMode == GameMode.vitesse)
                 AnimatedContainer(
@@ -207,14 +251,16 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                 ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
+              // BOARD
               BoardWidget(
                 board: game.board,
                 mergedTiles: game.mergedTiles,
                 newTiles: game.newTiles,
                 explodingTiles: game.explodingTiles,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
+              // NEW GAME BUTTON
               ElevatedButton(
                 onPressed: () {
                   setState(() {
