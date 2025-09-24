@@ -197,7 +197,8 @@ class _GameScreenState extends State<GameScreen> {
                           child: Text("Spécial",
                               style: TextStyle(
                                   color: Color.fromARGB(255, 252, 217, 61),
-                                  fontSize: 25))),
+                                  fontSize: 25,
+                                  fontFamily: 'Bellyn'))),
                     ),
                     DropdownMenuItem(
                       value: GameMode.vitesse,
@@ -205,7 +206,8 @@ class _GameScreenState extends State<GameScreen> {
                           child: Text("Vitesse",
                               style: TextStyle(
                                   color: Color.fromARGB(255, 24, 167, 203),
-                                  fontSize: 25))),
+                                  fontSize: 25,
+                                  fontFamily: 'Elektrik'))),
                     ),
                   ],
                   buttonStyleData: ButtonStyleData(
