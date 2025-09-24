@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/game.dart';
 import '../widgets/board_widget.dart';
+import 'dart:async';
+import 'dart:math';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -11,18 +13,62 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   late Game game;
+  Timer? _moveTimer;
+  static const int moveTimeoutSeconds = 5;
+  double _timerProgress = 1.0;
+  DateTime? _timerStart;
+  int _moveCount = 0;
+  double _currentTimeout = moveTimeoutSeconds.toDouble();
 
   @override
   void initState() {
     super.initState();
     game = Game();
+    _startMoveTimer();
+  }
+
+  void _startMoveTimer() {
+    _moveTimer?.cancel();
+    _timerStart = DateTime.now();
+    _timerProgress = 1.0;
+    setState(() {});
+
+    _moveTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      final elapsed = DateTime.now().difference(_timerStart!).inMilliseconds;
+      final total = (_currentTimeout * 1000).toInt();
+      setState(() {
+        _timerProgress = 1.0 - (elapsed / total);
+        if (_timerProgress <= 0) {
+          _timerProgress = 0;
+          timer.cancel();
+          _playRandomMove();
+        }
+      });
+    });
+  }
+
+  void _playRandomMove() {
+    final directions = ['left', 'right', 'up', 'down'];
+    final random = Random();
+    final dir = directions[random.nextInt(directions.length)];
+    _onSwipe(dir);
   }
 
   void _onSwipe(String direction) async {
-    // Step 1: Move and merge tiles, animate merges
+    _moveTimer?.cancel();
+    _timerProgress = 1.0;
     bool moved = game.moveWithoutNewTile(direction);
     if (moved) {
-      setState(() {}); // Animate merges
+      _moveCount++;
+      // Decrease timer every 10 moves, but not below 1 second
+      if (_moveCount % 10 == 0 && _currentTimeout > 1.0) {
+        setState(() {
+          _currentTimeout =
+              (_currentTimeout - 0.5).clamp(1.0, moveTimeoutSeconds.toDouble());
+        });
+      }
+
+      setState(() {});
 
       // Step 2: After a short delay, add new tile and animate its appearance
       await Future.delayed(const Duration(milliseconds: 10));
@@ -32,12 +78,13 @@ class _GameScreenState extends State<GameScreen> {
           _showGameOverDialog();
         }
       });
+      await Future.delayed(const Duration(milliseconds: 200));
+      setState(() {
+        game.explodingTiles.clear();
+        game.mergedTiles.clear();
+      });
     }
-    await Future.delayed(const Duration(milliseconds: 200));
-    setState(() {
-      game.explodingTiles.clear();
-      game.mergedTiles.clear();
-    });
+    _startMoveTimer();
   }
 
   void _showGameOverDialog() {
@@ -57,6 +104,12 @@ class _GameScreenState extends State<GameScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _moveTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -83,8 +136,22 @@ class _GameScreenState extends State<GameScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // SCORE
               Text("Score: ${game.score}",
                   style: const TextStyle(fontSize: 20)),
+              const SizedBox(height: 20),
+              // MOVE TIMER
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeInOut,
+                width: 200 * (_currentTimeout / moveTimeoutSeconds),
+                child: LinearProgressIndicator(
+                  value: _timerProgress,
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                  minHeight: 8,
+                ),
+              ),
               const SizedBox(height: 20),
               BoardWidget(
                 board: game.board,
@@ -97,6 +164,10 @@ class _GameScreenState extends State<GameScreen> {
                 onPressed: () {
                   setState(() {
                     game = Game();
+                    _moveCount = 0;
+                    _currentTimeout = moveTimeoutSeconds.toDouble();
+                    _moveTimer?.cancel();
+                    _startMoveTimer();
                   });
                 },
                 child: const Text("Nouvelle Partie"),
