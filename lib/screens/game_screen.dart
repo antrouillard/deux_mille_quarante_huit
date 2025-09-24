@@ -36,6 +36,7 @@ class _GameScreenState extends State<GameScreen> {
     await Future.delayed(const Duration(milliseconds: 200));
     setState(() {
       game.explodingTiles.clear();
+      game.mergedTiles.clear();
     });
   }
 
