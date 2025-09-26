@@ -88,9 +88,9 @@ class _TileWidgetState extends State<TileWidget>
       case -1:
         return Colors.black;
       case 2:
-        return Colors.grey[300]!;
-      case 4:
         return Colors.grey[400]!;
+      case 4:
+        return Colors.grey[600]!;
       case 8:
         return Colors.orange;
       case 16:

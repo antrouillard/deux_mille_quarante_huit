@@ -108,7 +108,8 @@ class _GameScreenState extends State<GameScreen> {
             onPressed: () {
               Navigator.pop(context);
               setState(() {
-                game = Game();
+                game.updateBestScore();
+                game = Game(mode: _selectedMode);
                 _moveCount = 0;
                 _currentTimeout = moveTimeoutSeconds.toDouble();
                 _moveTimer?.cancel();
@@ -163,81 +164,111 @@ class _GameScreenState extends State<GameScreen> {
                 ),
               ),
               // MODE DROPDOWN
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 120.0),
-                child: DropdownButton2<GameMode>(
-                  isExpanded: true,
-                  value: _selectedMode,
-                  underline: const SizedBox.shrink(),
-                  onChanged: (mode) {
-                    if (mode != null) {
-                      setState(() {
-                        _selectedMode = mode;
-                        game = Game(mode: _selectedMode);
-                        _moveCount = 0;
-                        _currentTimeout = moveTimeoutSeconds.toDouble();
-                        _moveTimer?.cancel();
-                        if (_selectedMode == GameMode.vitesse) {
-                          _startMoveTimer();
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  // Choose a width that is a fraction of the screen, or at least a minimum
+                  double dropdownWidth =
+                      constraints.maxWidth * 0.6; // 60% of screen width
+                  dropdownWidth = dropdownWidth < 220
+                      ? 220
+                      : dropdownWidth; // Minimum width
+
+                  return SizedBox(
+                    width: dropdownWidth,
+                    child: DropdownButton2<GameMode>(
+                      isExpanded: true,
+                      value: _selectedMode,
+                      underline: const SizedBox.shrink(),
+                      onChanged: (mode) {
+                        if (mode != null) {
+                          setState(() {
+                            _selectedMode = mode;
+                            game = Game(mode: _selectedMode);
+                            _moveCount = 0;
+                            _currentTimeout = moveTimeoutSeconds.toDouble();
+                            _moveTimer?.cancel();
+                            if (_selectedMode == GameMode.vitesse) {
+                              _startMoveTimer();
+                            }
+                          });
                         }
-                      });
-                    }
-                  },
-                  items: const [
-                    DropdownMenuItem(
-                      value: GameMode.classique,
-                      child: Center(
-                          child: Text("Classique",
-                              style: TextStyle(
-                                  color: Colors.black, fontSize: 25))),
+                      },
+                      items: const [
+                        DropdownMenuItem(
+                          value: GameMode.classique,
+                          child: Center(
+                              child: Text("Classique",
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 25))),
+                        ),
+                        DropdownMenuItem(
+                          value: GameMode.special,
+                          child: Center(
+                              child: Text("Spécial",
+                                  style: TextStyle(
+                                      color: Color.fromARGB(255, 252, 217, 61),
+                                      fontSize: 30,
+                                      fontFamily: 'Bellyn'))),
+                        ),
+                        DropdownMenuItem(
+                          value: GameMode.vitesse,
+                          child: Center(
+                              child: Text("Vitesse",
+                                  style: TextStyle(
+                                      color: Color.fromARGB(255, 24, 167, 203),
+                                      fontSize: 25,
+                                      fontFamily: 'Elektrik'))),
+                        ),
+                      ],
+                      buttonStyleData: ButtonStyleData(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          color: Colors.grey[100],
+                          border: Border.all(
+                              color: Colors.blueGrey.shade200, width: 2),
+                        ),
+                      ),
+                      dropdownStyleData: DropdownStyleData(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          color: Colors.white,
+                        ),
+                      ),
+                      iconStyleData: const IconStyleData(
+                        icon: Icon(Icons.arrow_drop_down,
+                            color: Colors.orange, size: 28),
+                      ),
+                      menuItemStyleData: const MenuItemStyleData(
+                        height: 48,
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                      ),
                     ),
-                    DropdownMenuItem(
-                      value: GameMode.special,
-                      child: Center(
-                          child: Text("Spécial",
-                              style: TextStyle(
-                                  color: Color.fromARGB(255, 252, 217, 61),
-                                  fontSize: 25,
-                                  fontFamily: 'Bellyn'))),
-                    ),
-                    DropdownMenuItem(
-                      value: GameMode.vitesse,
-                      child: Center(
-                          child: Text("Vitesse",
-                              style: TextStyle(
-                                  color: Color.fromARGB(255, 24, 167, 203),
-                                  fontSize: 25,
-                                  fontFamily: 'Elektrik'))),
-                    ),
-                  ],
-                  buttonStyleData: ButtonStyleData(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      color: Colors.grey[100],
-                      border:
-                          Border.all(color: Colors.blueGrey.shade200, width: 2),
-                    ),
-                  ),
-                  dropdownStyleData: DropdownStyleData(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      color: Colors.white,
-                    ),
-                  ),
-                  iconStyleData: const IconStyleData(
-                    icon: Icon(Icons.arrow_drop_down,
-                        color: Colors.orange, size: 28),
-                  ),
-                  menuItemStyleData: const MenuItemStyleData(
-                    height: 48,
-                    padding: EdgeInsets.symmetric(horizontal: 12),
-                  ),
-                ),
+                  );
+                },
               ),
               const SizedBox(height: 20),
               // SCORE
-              Text("Score: ${game.score}",
-                  style: const TextStyle(fontSize: 20)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Score: ${game.score}",
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  if (game.bestScore > 0) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      "(${game.bestScore})",
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.black38,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
               const SizedBox(height: 10),
               // MOVE TIMER
               if (_selectedMode == GameMode.vitesse)
@@ -261,12 +292,13 @@ class _GameScreenState extends State<GameScreen> {
                 newTiles: game.newTiles,
                 explodingTiles: game.explodingTiles,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               // NEW GAME BUTTON
               ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    game = Game();
+                    game.updateBestScore();
+                    game = Game(mode: _selectedMode);
                     _moveCount = 0;
                     _currentTimeout = moveTimeoutSeconds.toDouble();
                     _moveTimer?.cancel();
@@ -275,7 +307,8 @@ class _GameScreenState extends State<GameScreen> {
                     }
                   });
                 },
-                child: const Text("Nouvelle Partie"),
+                child: const Text("Nouvelle partie",
+                    style: TextStyle(fontSize: 25)),
               ),
             ],
           ),

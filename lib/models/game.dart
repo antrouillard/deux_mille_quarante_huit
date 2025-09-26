@@ -6,6 +6,7 @@ class Game {
   static const int size = 4;
   List<List<int>> board = List.generate(size, (_) => List.filled(size, 0));
   int score = 0;
+  int bestScore = 0;
   Set<Point<int>> mergedTiles = {};
   Set<Point<int>> newTiles = {};
   Set<Point<int>> explodingTiles = {};
@@ -144,6 +145,12 @@ class Game {
       line.add(0);
     }
     return line;
+  }
+
+  void updateBestScore() {
+    if (score > bestScore) {
+      bestScore = score;
+    }
   }
 
   void _checkGameOver() {
