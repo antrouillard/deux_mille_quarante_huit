@@ -4,6 +4,7 @@ import '../widgets/board_widget.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -27,9 +28,23 @@ class _GameScreenState extends State<GameScreen> {
   void initState() {
     super.initState();
     game = Game(mode: _selectedMode);
+    _loadBestScore();
     if (_selectedMode == GameMode.vitesse) {
       _startMoveTimer();
     }
+  }
+
+  Future<void> _loadBestScore() async {
+    final prefs = await SharedPreferences.getInstance();
+    final bestScore = prefs.getInt('best_score_${_selectedMode.name}') ?? 0;
+    setState(() {
+      game.bestScore = bestScore;
+    });
+  }
+
+  Future<void> _saveBestScore() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('best_score_${_selectedMode.name}', game.bestScore);
   }
 
   void _startMoveTimer() {
@@ -100,21 +115,26 @@ class _GameScreenState extends State<GameScreen> {
   void _showGameOverDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (_) => AlertDialog(
         title: const Text("Game Over"),
         content: Text("Score final : ${game.score}"),
         actions: [
           TextButton(
-            onPressed: () {
+            onPressed: () async {
+              game.updateBestScore();
+              await _saveBestScore(); // Save the best score
               Navigator.pop(context);
               setState(() {
-                game.updateBestScore();
                 game = Game(mode: _selectedMode);
                 _moveCount = 0;
                 _currentTimeout = moveTimeoutSeconds.toDouble();
                 _moveTimer?.cancel();
-                _startMoveTimer();
               });
+              await _loadBestScore();
+              if (_selectedMode == GameMode.vitesse) {
+                _startMoveTimer();
+              }
             },
             child: const Text("Rejouer"),
           ),
@@ -179,7 +199,7 @@ class _GameScreenState extends State<GameScreen> {
                       isExpanded: true,
                       value: _selectedMode,
                       underline: const SizedBox.shrink(),
-                      onChanged: (mode) {
+                      onChanged: (mode) async {
                         if (mode != null) {
                           setState(() {
                             _selectedMode = mode;
@@ -187,10 +207,11 @@ class _GameScreenState extends State<GameScreen> {
                             _moveCount = 0;
                             _currentTimeout = moveTimeoutSeconds.toDouble();
                             _moveTimer?.cancel();
-                            if (_selectedMode == GameMode.vitesse) {
-                              _startMoveTimer();
-                            }
                           });
+                          await _loadBestScore(); // Load best score for the new mode
+                          if (_selectedMode == GameMode.vitesse) {
+                            _startMoveTimer();
+                          }
                         }
                       },
                       items: const [
@@ -295,17 +316,19 @@ class _GameScreenState extends State<GameScreen> {
               const SizedBox(height: 20),
               // NEW GAME BUTTON
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  game.updateBestScore();
+                  await _saveBestScore(); // Save the best score
                   setState(() {
-                    game.updateBestScore();
                     game = Game(mode: _selectedMode);
                     _moveCount = 0;
                     _currentTimeout = moveTimeoutSeconds.toDouble();
                     _moveTimer?.cancel();
-                    if (_selectedMode == GameMode.vitesse) {
-                      _startMoveTimer();
-                    }
                   });
+                  await _loadBestScore();
+                  if (_selectedMode == GameMode.vitesse) {
+                    _startMoveTimer();
+                  }
                 },
                 child: const Text("Nouvelle partie",
                     style: TextStyle(fontSize: 25)),
