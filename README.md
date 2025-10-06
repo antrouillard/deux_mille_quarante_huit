@@ -1,16 +1,12 @@
 # deux_mille_quarante_huit
 
-A new Flutter project.
+Notre projet de 2048 revisité
+
+ROUILLARD Antoine et KAOUKEB Adam
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Suite à des problèmes de compatibilité, le projet ne compile pas en format Android.
+Il faut donc le lancer sur navigateur, par exemple Chrome, et accéder aux options développeur pour sélectionner les dimensions d'un appareil.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Nous nous excusons pour la gêne occasionnée par ce problème.
